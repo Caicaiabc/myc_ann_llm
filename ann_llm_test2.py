@@ -202,11 +202,11 @@ def info_nce_loss(transformer_output, item_tower_output, temperature=0.1, debug=
 # 主程序
 if __name__ == "__main__":
     # 参数设置
-    embedding_dim = 64
+    embedding_dim = 32
     num_heads = 4
     num_layers = 2
     hidden_dim = 128
-    vocab_size = 100001  # 确保覆盖所有item_id和category_id
+    vocab_size = 308272  # 确保覆盖所有item_id和category_id
     batch_size = 300
     epochs = 1
     learning_rate = 0.001
