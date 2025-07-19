@@ -205,8 +205,8 @@ if __name__ == "__main__":
     embedding_dim = 32
     num_heads = 4
     num_layers = 2
-    hidden_dim = 128
-    vocab_size = 308272  # 确保覆盖所有item_id和category_id
+    hidden_dim = 64
+    vocab_size = 311627  # 确保覆盖所有item_id和category_id
     batch_size = 300
     epochs = 1
     learning_rate = 0.001

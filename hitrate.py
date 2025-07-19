@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 
 
 def parse_vector(s):
@@ -7,13 +8,14 @@ def parse_vector(s):
     return np.array(eval(s))
 
 
-def find_closest_items(user_vector, item_vectors, item_ids, top_n=1000):
+def find_closest_items(user_vector, item_vectors, item_ids, top_n=200):
     """找到与用户向量最接近的top_n个不重复的物品ID"""
     dot_products = np.array([np.dot(user_vector, item_vector) for item_vector in item_vectors])
     sorted_indices = np.argsort(dot_products)[::-1]
 
     unique_item_ids = []
-    for index in sorted_indices:
+    print(f"正在查找最接近的{top_n}个不重复物品......")
+    for index in tqdm(sorted_indices, total=min(top_n, len(sorted_indices)), desc="进度"):
         item_id = item_ids[index]
         # 确保ID是字符串类型（根据实际数据调整）
         item_id = str(item_id)
@@ -67,7 +69,7 @@ sample_ids = user_df['sample_id'].tolist()
 target_item_ids = [str(id) for id in user_df['target_item_item_id'].tolist()]
 
 # 要检查的位置
-positions = [1, 2, 3, 5, 10, 20, 30, 50, 100, 200, 1000]
+positions = [1, 2, 3, 5, 10, 20, 30, 50, 100, 200]
 
 results = []
 for i in range(len(user_vectors)):

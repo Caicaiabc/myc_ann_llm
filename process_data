@@ -1,0 +1,96 @@
+import pandas as pd 
+import numpy as np
+from sklearn.preprocessing import LabelEncoder
+import ast
+from tqdm import tqdm
+
+train_df = pd.read_csv('train_data.csv')
+test_df = pd.read_csv('test_data.csv')
+train_df = train_df[:10001]
+test_df = test_df[:10001]
+print(train_df.head())
+train_df['item_seq_item_id'] = train_df['item_seq_item_id'].apply(ast.literal_eval)
+test_df['item_seq_item_id'] = test_df['item_seq_item_id'].apply(ast.literal_eval)
+train_df['item_seq_category_id'] = train_df['item_seq_category_id'].apply(ast.literal_eval)
+test_df['item_seq_category_id'] = test_df['item_seq_category_id'].apply(ast.literal_eval)
+
+# 1. 提取所有唯一的item_id
+print('item提取中......')
+all_item_ids = []
+for seq in train_df['item_seq_item_id']:
+    all_item_ids.extend(seq)
+for seq in test_df['item_seq_item_id']:
+    all_item_ids.extend(seq)
+for x in test_df['target_item_item_id']:
+    all_item_ids.append(x)
+print('完成')
+print(all_item_ids[0])
+    
+# 2. 提取所有唯一的category_id
+print('category提取中......')
+all_category_ids = []
+for seq in train_df['item_seq_category_id']:
+    all_category_ids.extend(seq)
+for seq in test_df['item_seq_category_id']:
+    all_category_ids.extend(seq)
+for x in test_df['target_item_category_id']:
+    all_category_ids.append(x)
+print('完成')
+
+# 3. 创建编码器并拟合
+print('编码器创建中......')
+item_encoder = LabelEncoder()
+item_encoder.fit(all_item_ids)
+
+category_encoder = LabelEncoder()
+category_encoder.fit(all_category_ids)
+print('完成')
+
+# 4. 定义编码函数
+#需要修改问题：一是如果传入元素会报错 二是如果遇见没见到的值如何处理
+def encode_sequence(seq, encoder):
+    return encoder.transform(seq).tolist()
+
+def encode_value(value, encoder):
+    value = [value]
+    return encoder.transform(value)
+
+# 5. 应用编码到DataFrame
+tqdm.pandas(desc="处理进度")
+train_df['item_seq_item_id'] = train_df['item_seq_item_id'].progress_apply(
+    lambda x: encode_sequence(x, item_encoder)
+)
+print('item_train完成')
+
+tqdm.pandas(desc="处理进度")
+test_df['item_seq_item_id'] = test_df['item_seq_item_id'].progress_apply(
+    lambda x: encode_sequence(x, item_encoder)
+)
+print('item_test完成')
+
+tqdm.pandas(desc="处理进度")
+train_df['item_seq_category_id'] = train_df['item_seq_category_id'].progress_apply(
+    lambda x: encode_sequence(x, category_encoder)
+)
+print('category_train完成')
+
+tqdm.pandas(desc="处理进度")
+test_df['item_seq_category_id'] = test_df['item_seq_category_id'].progress_apply(
+    lambda x: encode_sequence(x, category_encoder)
+)
+print('category_test完成')
+
+tqdm.pandas(desc="处理进度")
+test_df['target_item_item_id'] = test_df['target_item_item_id'].progress_apply(
+    lambda x: encode_value(x, item_encoder)
+)
+print('target_item_item_id完成')
+
+tqdm.pandas(desc="处理进度")
+test_df['target_item_category_id'] = test_df['target_item_category_id'].progress_apply(
+    lambda x: encode_value(x, category_encoder)
+)
+print('target_item_category_id完成')
+
+train_df.to_csv('train_data1.csv',index=False)
+test_df.to_csv('test_data1.csv',index=False)
